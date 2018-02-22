@@ -1,0 +1,82 @@
+#!/bin/bash
+DATE=$(date --iso-8601=date)
+PATH1=$(pwd)/scaning
+PATH2=$(pwd)/scaning/$DATE
+PATH3=$(pwd)/01date
+echo 'Enter the time timer(5s or 3m):' && read t
+
+func_mkdir ()
+{
+ mkdir $PATH1 
+ mkdir $PATH2
+}
+
+func_error ()
+{
+ echo "Wait..."
+ sleep 5s
+ echo "Error... Pleas contact axmetret@gmail.com"
+}
+
+func_remove_time ()
+{
+  cd $PATH1
+  ls -l | cut -d " " -f7 | sed -n -e 2p > zdate1 
+  ls -l | cut -d " " -f7 | sed -n -e 3p > zdate2
+   if [ -f zdate1 ] ; then
+    if [ -f zdate2 ] ; then
+     if [[ $(cat zdate1) < $(cat zdate2) ]] ; then 
+      rm zdate1 && rm zdate2 
+      ls -l | cut -d " " -f9 | sed -n -e 2p > $PATH3
+      rm -r  "$PATH1/$(cat $PATH3)"
+      rm $PATH3
+     else 
+      echo -e "\e[32mOk\e[0m"
+     fi
+    else 
+     echo -e "\e[31mError(412)\e[0m"
+     func_error
+    fi
+   else
+    echo -e "\e[31mError(411)\e[0m"
+    func_error
+   fi    
+}
+
+func_conn ()
+{
+ cd ..
+ while read ip ; do
+  ping -c 1 $ip | grep "64 bytes from $ip:" > $ip
+  COL=$(wc -l $ip | awk '{print $1}')
+   if [[ $COL != 0 ]] ; then 
+    echo -e "$ip" "\e[32m[Connect]\e[0m" && rm $ip
+    echo -e "\e[32m$ip [Connect]\e[0m" >> $PATH2/conn_$DATE && date >> $PATH2/conn_$DATE
+   else
+    echo -e "$ip" "\e[31m[D!connect]\e[0m" && rm $ip
+    echo -e "\e[31m$ip [D!connect]\e[0m" >> $PATH2/dicon_$DATE && date >> $PATH2/dicon_$DATE
+   fi
+ done < host
+}
+func_start ()
+{
+if [ -f $PATH2 ] ; then
+ func_body
+else 
+ func_mkdir
+ func_body
+fi
+}
+func_body ()
+{
+ while : ; do
+  func_remove_time
+  clear
+  func_conn
+  sleep $t 
+  sleep 1s && echo 'Rescan (2s)'
+  sleep 1s && echo 'Rescan (1s)'
+  sleep 1s
+ done
+}
+func_start
