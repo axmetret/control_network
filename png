@@ -2,50 +2,14 @@
 DATE=$(date --iso-8601=date)
 PATH1=$(pwd)/scaning
 PATH2=$(pwd)/scaning/$DATE
-PATH3=$(pwd)/01date
 echo 'Enter the time timer(5s or 3m):' && read t
-
 func_mkdir ()
 {
  mkdir $PATH1 
  mkdir $PATH2
 }
-
-func_error ()
-{
- echo "Wait..."
- sleep 5s
- echo "Error... Pleas contact axmetret@gmail.com"
-}
-
-func_remove_time ()
-{
-  cd $PATH1
-  ls -l | cut -d " " -f7 | sed -n -e 2p > zdate1 
-  ls -l | cut -d " " -f7 | sed -n -e 3p > zdate2
-   if [ -f zdate1 ] ; then
-    if [ -f zdate2 ] ; then
-     if [[ $(cat zdate1) < $(cat zdate2) ]] ; then 
-      rm zdate1 && rm zdate2 
-      ls -l | cut -d " " -f9 | sed -n -e 2p > $PATH3
-      rm -r  "$PATH1/$(cat $PATH3)"
-      rm $PATH3
-     else 
-      echo -e "\e[32mOk\e[0m"
-     fi
-    else 
-     echo -e "\e[31mError(412)\e[0m"
-     func_error
-    fi
-   else
-    echo -e "\e[31mError(411)\e[0m"
-    func_error
-   fi    
-}
-
 func_conn ()
 {
- cd ..
  while read ip ; do
   ping -c 1 $ip | grep "64 bytes from $ip:" > $ip
   COL=$(wc -l $ip | awk '{print $1}')
@@ -70,7 +34,6 @@ fi
 func_body ()
 {
  while : ; do
-  func_remove_time
   clear
   func_conn
   sleep $t 
